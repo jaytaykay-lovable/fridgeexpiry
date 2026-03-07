@@ -4,14 +4,18 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LogOut, Settings, User } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { LogOut, Settings, User, Bell } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { subscribeToPush, unsubscribeFromPush, isPushSubscribed } from '@/lib/pushNotifications';
 
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const { settings, fetchSettings, updateSettings } = useFridgeStore();
   const [expiryDays, setExpiryDays] = useState('7');
   const [notifyDays, setNotifyDays] = useState('2');
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -23,6 +27,29 @@ export default function ProfilePage() {
       setNotifyDays(String(settings.notify_days_before));
     }
   }, [settings]);
+
+  useEffect(() => {
+    isPushSubscribed().then(setPushEnabled);
+  }, []);
+
+  const handleTogglePush = async (checked: boolean) => {
+    setPushLoading(true);
+    try {
+      if (checked) {
+        const ok = await subscribeToPush();
+        setPushEnabled(ok);
+        if (ok) toast({ title: 'Push notifications enabled' });
+        else toast({ title: 'Could not enable notifications', variant: 'destructive' });
+      } else {
+        await unsubscribeFromPush();
+        setPushEnabled(false);
+        toast({ title: 'Push notifications disabled' });
+      }
+    } catch {
+      toast({ title: 'Error toggling notifications', variant: 'destructive' });
+    }
+    setPushLoading(false);
+  };
 
   const handleSave = async () => {
     const d = parseInt(expiryDays, 10);
@@ -91,6 +118,25 @@ export default function ProfilePage() {
           <Button onClick={handleSave} className="w-full">
             Save Settings
           </Button>
+        </div>
+      </div>
+
+      {/* Notifications */}
+      <div className="rounded-xl bg-card border p-4 mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Bell size={18} className="text-primary" />
+          <h2 className="font-display font-semibold">Notifications</h2>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">Expiry alerts</p>
+            <p className="text-xs text-muted-foreground">Get notified when food is about to expire</p>
+          </div>
+          <Switch
+            checked={pushEnabled}
+            onCheckedChange={handleTogglePush}
+            disabled={pushLoading}
+          />
         </div>
       </div>
 

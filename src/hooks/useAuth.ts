@@ -24,8 +24,12 @@ export function useAuth() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: window.location.origin },
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: {},
+      },
     });
+    // Note: Email confirmation is disabled in Supabase dashboard for testing
     return { error };
   };
 
