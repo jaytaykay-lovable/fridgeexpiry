@@ -17,6 +17,10 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   const { user, loading } = useAuth();
 
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
