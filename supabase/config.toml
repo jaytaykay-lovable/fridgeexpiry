@@ -1,0 +1,4 @@
+project_id = "eilleupxcxjpzdepruuy"
+
+[functions.process-food-image]
+verify_jwt = true
