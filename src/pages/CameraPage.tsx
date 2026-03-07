@@ -43,14 +43,32 @@ export default function CameraPage() {
       const imageUrl = urlData.publicUrl;
 
       // Call edge function
-      const { data, error } = await supabase.functions.invoke('process-food-image', {
-        body: {
-          image_url: imageUrl,
-          default_expiry_days: settings?.default_expiry_days ?? 7,
-        },
-      });
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+      if (!accessToken) throw new Error('Session expired. Please log in again.');
 
-      if (error) throw error;
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-food-image`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            image_url: imageUrl,
+            default_expiry_days: settings?.default_expiry_days ?? 7,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        throw new Error(errBody.error || `Processing failed (${response.status})`);
+      }
+
+      const data = await response.json();
 
       const items = (data.items || []).map((item: any) => ({
         user_id: user.id,
