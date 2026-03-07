@@ -14,7 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      food_items: {
+        Row: {
+          category: string
+          created_at: string
+          expiry_date: string
+          id: string
+          image_url: string | null
+          is_flagged: boolean
+          name: string
+          status: Database["public"]["Enums"]["food_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          expiry_date: string
+          id?: string
+          image_url?: string | null
+          is_flagged?: boolean
+          name: string
+          status?: Database["public"]["Enums"]["food_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          expiry_date?: string
+          id?: string
+          image_url?: string | null
+          is_flagged?: boolean
+          name?: string
+          status?: Database["public"]["Enums"]["food_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          default_expiry_days: number
+          notify_days_before: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_expiry_days?: number
+          notify_days_before?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_expiry_days?: number
+          notify_days_before?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +85,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      food_status: "active" | "consumed" | "wasted"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +212,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      food_status: ["active", "consumed", "wasted"],
+    },
   },
 } as const
