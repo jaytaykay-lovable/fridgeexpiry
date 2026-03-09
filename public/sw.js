@@ -32,7 +32,7 @@ self.addEventListener('fetch', (event) => {
 // Push notifications
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
-  const title = data.title || 'FridgeKeeper';
+  const title = data.title || 'Fridge Expiry AI';
   const options = {
     body: data.body || 'You have expiring food items!',
     icon: '/icons/icon-192.png',
