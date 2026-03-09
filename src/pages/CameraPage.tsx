@@ -37,7 +37,7 @@ export default function CameraPage() {
 
       // Get public URL
       const { data: urlData } = supabase.storage
-        .from('fridge-images')
+        .from('food-images')
         .getPublicUrl(path);
 
       const imageUrl = urlData.publicUrl;
