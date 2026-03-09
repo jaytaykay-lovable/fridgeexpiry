@@ -1,7 +1,7 @@
 {
-  "name": "FridgeKeeper",
-  "short_name": "FridgeKeeper",
-  "description": "Track your fridge inventory, reduce food waste",
+  "name": "Fridge Expiry AI",
+  "short_name": "FridgeExpiry",
+  "description": "Smart food tracking - reduce food waste with AI",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f5f9f7",
