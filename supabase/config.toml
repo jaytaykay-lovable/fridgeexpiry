@@ -1,7 +1,1 @@
-project_id = "jkaevhegyrpghuwevmam"
-
-[functions.process-food-image]
-verify_jwt = false
-
-[functions.check-expiry-notifications]
-verify_jwt = false
+project_id = "eilleupxcxjpzdepruuy"
