@@ -34,12 +34,10 @@ export default function AuthPage() {
     <div className="auth-container">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary">
-            <Refrigerator size={32} className="text-primary-foreground" />
-          </div>
-          <h1 className="font-display text-2xl font-bold">FridgeKeeper</h1>
+          <img src="/logo.png" alt="Fridge Expiry AI" className="mx-auto mb-3 h-24 w-auto" />
+          <h1 className="font-display text-2xl font-bold">Fridge Expiry AI</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Track your food, reduce waste
+            Smart Food Tracking
           </p>
         </div>
 
