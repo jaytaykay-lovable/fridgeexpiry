@@ -56,7 +56,7 @@ export default function EditFoodModal({ item, onSave, onClose }: EditFoodModalPr
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[100]">
                 {FOOD_CATEGORIES.map((c) => (
                   <SelectItem key={c} value={c}>{c}</SelectItem>
                 ))}
