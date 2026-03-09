@@ -30,7 +30,7 @@ export default function EditFoodModal({ item, onSave, onClose }: EditFoodModalPr
   return (
     <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-card p-6 animate-fade-in">
+      <div className="relative z-[95] w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-card p-6 animate-fade-in">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-display text-lg font-bold">Edit Item</h2>
           <button onClick={onClose} className="p-1 rounded-full hover:bg-muted">

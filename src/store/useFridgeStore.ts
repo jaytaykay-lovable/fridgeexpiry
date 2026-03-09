@@ -31,7 +31,6 @@ export const useFridgeStore = create<FridgeState>((set, get) => ({
     const { data, error } = await supabase
       .from('food_items')
       .select('*')
-      .eq('status', 'active')
       .order('expiry_date', { ascending: true });
 
     if (!error && data) {
