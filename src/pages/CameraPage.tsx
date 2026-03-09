@@ -30,14 +30,14 @@ export default function CameraPage() {
       const ext = file.name.split('.').pop() || 'jpg';
       const path = `${user.id}/${Date.now()}.${ext}`;
       const { error: uploadError } = await supabase.storage
-        .from('fridge-images')
+        .from('food-images')
         .upload(path, file);
 
       if (uploadError) throw uploadError;
 
       // Get public URL
       const { data: urlData } = supabase.storage
-        .from('fridge-images')
+        .from('food-images')
         .getPublicUrl(path);
 
       const imageUrl = urlData.publicUrl;
