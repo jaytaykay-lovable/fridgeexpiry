@@ -10,100 +10,11 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "14.4"
   }
   public: {
     Tables: {
-      food_items: {
-        Row: {
-          category: string
-          created_at: string
-          expiry_date: string
-          id: string
-          image_url: string | null
-          is_flagged: boolean
-          name: string
-          status: Database["public"]["Enums"]["food_status"]
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          category?: string
-          created_at?: string
-          expiry_date: string
-          id?: string
-          image_url?: string | null
-          is_flagged?: boolean
-          name: string
-          status?: Database["public"]["Enums"]["food_status"]
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          category?: string
-          created_at?: string
-          expiry_date?: string
-          id?: string
-          image_url?: string | null
-          is_flagged?: boolean
-          name?: string
-          status?: Database["public"]["Enums"]["food_status"]
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      push_subscriptions: {
-        Row: {
-          auth: string
-          created_at: string
-          endpoint: string
-          id: string
-          p256dh: string
-          user_id: string
-        }
-        Insert: {
-          auth: string
-          created_at?: string
-          endpoint: string
-          id?: string
-          p256dh: string
-          user_id: string
-        }
-        Update: {
-          auth?: string
-          created_at?: string
-          endpoint?: string
-          id?: string
-          p256dh?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_settings: {
-        Row: {
-          created_at: string
-          default_expiry_days: number
-          notify_days_before: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          default_expiry_days?: number
-          notify_days_before?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          default_expiry_days?: number
-          notify_days_before?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
@@ -112,7 +23,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      food_status: "active" | "consumed" | "wasted"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -239,8 +150,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      food_status: ["active", "consumed", "wasted"],
-    },
+    Enums: {},
   },
 } as const
