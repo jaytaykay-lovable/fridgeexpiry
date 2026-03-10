@@ -3,6 +3,7 @@ import { useSwipeable } from 'react-swipeable';
 import { format, differenceInDays } from 'date-fns';
 import { AlertTriangle, Check, Trash2 } from 'lucide-react';
 import type { FoodItem } from '@/types/food';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 
 interface FoodCardProps {
   item: FoodItem;
