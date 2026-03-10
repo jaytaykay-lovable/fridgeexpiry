@@ -25,17 +25,21 @@ export async function registerServiceWorker() {
 }
 
 export async function subscribeToPush(): Promise<boolean> {
-  if (!('PushManager' in window) || !VAPID_PUBLIC_KEY) {
-    console.warn('Push notifications not supported or VAPID key missing');
+  if (!('PushManager' in window)) {
+    console.warn('Push notifications not supported');
+    return false;
+  }
+  if (!VAPID_PUBLIC_KEY) {
+    console.warn('Push notifications not working: VAPID key missing');
     return false;
   }
 
   try {
     const registration = await navigator.serviceWorker.ready;
-    
+
     // Check existing subscription
     let subscription = await registration.pushManager.getSubscription();
-    
+
     if (!subscription) {
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
@@ -47,7 +51,7 @@ export async function subscribeToPush(): Promise<boolean> {
     if (!user) return false;
 
     const subJson = subscription.toJSON();
-    
+
     // Save to Supabase
     await supabase.from('push_subscriptions').upsert(
       {
