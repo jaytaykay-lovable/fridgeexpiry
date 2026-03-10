@@ -3,6 +3,7 @@ import { useSwipeable } from 'react-swipeable';
 import { format, differenceInDays } from 'date-fns';
 import { AlertTriangle, Check, Trash2 } from 'lucide-react';
 import type { FoodItem } from '@/types/food';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 
 interface FoodCardProps {
   item: FoodItem;
@@ -13,6 +14,7 @@ interface FoodCardProps {
 
 export default function FoodCard({ item, onConsume, onWaste, onClick }: FoodCardProps) {
   const [offset, setOffset] = useState(0);
+  const imageUrl = useSignedUrl(item.image_url);
   const [swiping, setSwiping] = useState(false);
   const [dismissed, setDismissed] = useState<'left' | 'right' | null>(null);
 
@@ -82,9 +84,9 @@ export default function FoodCard({ item, onConsume, onWaste, onClick }: FoodCard
       >
         {/* Thumbnail */}
         <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
-          {item.image_url ? (
+          {imageUrl ? (
             <img
-              src={item.image_url}
+              src={imageUrl}
               alt={item.name}
               className="h-full w-full object-cover"
               loading="lazy"
