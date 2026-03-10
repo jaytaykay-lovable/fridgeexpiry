@@ -78,7 +78,7 @@ export default function CameraPage() {
         category: item.category || 'Other',
         expiry_date: item.expiry_date,
         is_flagged: item.is_flagged || false,
-        image_url: imageUrl,
+        image_url: path,
         status: 'active' as const,
       }));
 

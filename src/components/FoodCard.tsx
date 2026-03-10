@@ -84,9 +84,9 @@ export default function FoodCard({ item, onConsume, onWaste, onClick }: FoodCard
       >
         {/* Thumbnail */}
         <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
-          {item.image_url ? (
+          {imageUrl ? (
             <img
-              src={item.image_url}
+              src={imageUrl}
               alt={item.name}
               className="h-full w-full object-cover"
               loading="lazy"
