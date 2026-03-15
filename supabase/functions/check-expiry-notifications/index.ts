@@ -3,10 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 import webpush from "https://esm.sh/web-push@3.6.7";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const JSON_HEADERS = { "Content-Type": "application/json" };
 
 serve(async (req) => {
   // No CORS needed — this is a server-to-server cron endpoint
