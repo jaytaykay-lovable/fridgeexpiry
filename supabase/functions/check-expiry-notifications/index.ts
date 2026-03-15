@@ -102,7 +102,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, notifications_sent: totalSent }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: JSON_HEADERS }
     );
   } catch (e) {
     console.error("check-expiry-notifications error:", e);
