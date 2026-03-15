@@ -3,14 +3,16 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 import webpush from "https://esm.sh/web-push@3.6.7";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const JSON_HEADERS = { "Content-Type": "application/json" };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+  // No CORS needed — this is a server-to-server cron endpoint
+  const cronSecret = req.headers.get("x-cron-secret");
+  if (cronSecret !== Deno.env.get("CRON_SECRET")) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -100,13 +102,13 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, notifications_sent: totalSent }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: JSON_HEADERS }
     );
   } catch (e) {
     console.error("check-expiry-notifications error:", e);
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: JSON_HEADERS }
     );
   }
 });
