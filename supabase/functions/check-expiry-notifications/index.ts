@@ -10,25 +10,6 @@ serve(async (req) => {
     const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY")!;
     const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY")!;
 
-    // Authenticate via CRON_SECRET header
-    const cronSecret = req.headers.get("x-cron-secret");
-    const configuredCronSecret = Deno.env.get("CRON_SECRET");
-
-    if (!configuredCronSecret) {
-      console.error("CRON_SECRET environment variable is not set.");
-      return new Response(
-        JSON.stringify({ error: "Server configuration error" }),
-        { status: 500, headers: JSON_HEADERS }
-      );
-    }
-
-    if (cronSecret !== configuredCronSecret) {
-      console.error("Unauthorized: invalid or missing x-cron-secret header.");
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: JSON_HEADERS,
-      });
-    }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
