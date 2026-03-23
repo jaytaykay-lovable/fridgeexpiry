@@ -36,6 +36,17 @@ export default function CameraPage() {
 
       if (uploadError) throw uploadError;
 
+      // Generate and upload thumbnail
+      try {
+        const thumbBlob = await createThumbnail(file, 150, 0.7);
+        const thumbPath = getThumbnailPath(path);
+        await supabase.storage.from('fridge-images').upload(thumbPath, thumbBlob, {
+          contentType: 'image/jpeg',
+        });
+      } catch (thumbErr) {
+        console.warn('Thumbnail generation failed, continuing without:', thumbErr);
+      }
+
       // Create a signed URL for AI processing (short-lived)
       const { data: signedData, error: signedError } = await supabase.storage
         .from('fridge-images')
