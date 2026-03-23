@@ -15,13 +15,14 @@ interface FoodCardProps {
 
 export default function FoodCard({ item, onConsume, onWaste, onClick }: FoodCardProps) {
   const [offset, setOffset] = useState(0);
-  const imageUrl = useSignedUrl(item.image_url, {
-    width: 112,
-    height: 112,
-    resize: 'cover',
-    format: 'webp',
-    quality: 75,
-  });
+  // Use thumbnail version if it's a storage path (not a legacy full URL)
+  const thumbPath = item.image_url && !item.image_url.startsWith('http')
+    ? getThumbnailPath(item.image_url)
+    : item.image_url;
+  const thumbnailUrl = useSignedUrl(thumbPath);
+  // Fallback to original if thumbnail fails
+  const originalUrl = useSignedUrl(item.image_url);
+  const imageUrl = thumbnailUrl || originalUrl;
   const [swiping, setSwiping] = useState(false);
   const [dismissed, setDismissed] = useState<'left' | 'right' | null>(null);
 
