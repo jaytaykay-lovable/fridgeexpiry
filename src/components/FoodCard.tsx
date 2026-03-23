@@ -4,6 +4,7 @@ import { format, differenceInDays } from 'date-fns';
 import { AlertTriangle, Check, Trash2 } from 'lucide-react';
 import type { FoodItem } from '@/types/food';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
+import { getThumbnailPath } from '@/lib/imageUtils';
 
 interface FoodCardProps {
   item: FoodItem;
