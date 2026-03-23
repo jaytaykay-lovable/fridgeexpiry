@@ -6,6 +6,7 @@ import { useFridgeStore } from '@/store/useFridgeStore';
 import ProcessingOverlay from '@/components/ProcessingOverlay';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { createThumbnail, getThumbnailPath } from '@/lib/imageUtils';
 
 export default function CameraPage() {
   const navigate = useNavigate();
@@ -34,6 +35,17 @@ export default function CameraPage() {
         .upload(path, file);
 
       if (uploadError) throw uploadError;
+
+      // Generate and upload thumbnail
+      try {
+        const thumbBlob = await createThumbnail(file, 150, 0.7);
+        const thumbPath = getThumbnailPath(path);
+        await supabase.storage.from('fridge-images').upload(thumbPath, thumbBlob, {
+          contentType: 'image/jpeg',
+        });
+      } catch (thumbErr) {
+        console.warn('Thumbnail generation failed, continuing without:', thumbErr);
+      }
 
       // Create a signed URL for AI processing (short-lived)
       const { data: signedData, error: signedError } = await supabase.storage
