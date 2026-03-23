@@ -47,7 +47,7 @@ export function useSignedUrl(
 
     supabase.storage
       .from(BUCKET)
-      .createSignedUrl(storagePath, SIGNED_URL_EXPIRY, options)
+      .createSignedUrl(storagePath, SIGNED_URL_EXPIRY, transform ? { transform: transform as any } : undefined)
       .then(({ data, error }) => {
         if (error) {
           console.error('Failed to create signed URL:', error);
