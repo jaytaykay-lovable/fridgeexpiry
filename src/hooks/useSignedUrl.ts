@@ -4,18 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 const BUCKET = 'fridge-images';
 const SIGNED_URL_EXPIRY = 3600; // 1 hour
 
-export interface TransformOptions {
-  width?: number;
-  height?: number;
-  resize?: 'cover' | 'contain' | 'fill';
-  format?: 'origin' | 'avif' | 'webp';
-  quality?: number;
-}
-
-export function useSignedUrl(
-  imageUrl: string | null | undefined,
-  transform?: TransformOptions
-) {
+export function useSignedUrl(imageUrl: string | null | undefined) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -47,7 +36,7 @@ export function useSignedUrl(
 
     supabase.storage
       .from(BUCKET)
-      .createSignedUrl(storagePath, SIGNED_URL_EXPIRY, transform ? { transform: transform as any } : undefined)
+      .createSignedUrl(storagePath, SIGNED_URL_EXPIRY)
       .then(({ data, error }) => {
         if (error) {
           console.error('Failed to create signed URL:', error);
@@ -56,7 +45,7 @@ export function useSignedUrl(
           setSignedUrl(data.signedUrl);
         }
       });
-  }, [imageUrl, transform?.width, transform?.height, transform?.quality]);
+  }, [imageUrl]);
 
   return signedUrl;
 }
