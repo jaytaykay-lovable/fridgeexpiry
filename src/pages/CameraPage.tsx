@@ -6,6 +6,7 @@ import { useFridgeStore } from '@/store/useFridgeStore';
 import ProcessingOverlay from '@/components/ProcessingOverlay';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { createThumbnail, getThumbnailPath } from '@/lib/imageUtils';
 
 export default function CameraPage() {
   const navigate = useNavigate();
