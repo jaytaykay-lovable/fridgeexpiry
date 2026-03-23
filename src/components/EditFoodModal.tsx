@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 
 interface EditFoodModalProps {
   item: FoodItem;
@@ -20,6 +21,7 @@ export default function EditFoodModal({ item, onSave, onClose }: EditFoodModalPr
   const [expiryDate, setExpiryDate] = useState(
     format(new Date(item.expiry_date), 'yyyy-MM-dd')
   );
+  const imageUrl = useSignedUrl(item.image_url);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,13 +32,23 @@ export default function EditFoodModal({ item, onSave, onClose }: EditFoodModalPr
   return (
     <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-[95] w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-card p-6 animate-fade-in">
+      <div className="relative z-[95] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-card p-6 animate-fade-in">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-display text-lg font-bold">Edit Item</h2>
           <button onClick={onClose} className="p-1 rounded-full hover:bg-muted">
             <X size={20} />
           </button>
         </div>
+
+        {imageUrl && (
+          <div className="mb-4 rounded-xl overflow-hidden bg-muted">
+            <img
+              src={imageUrl}
+              alt={item.name}
+              className="w-full max-h-56 object-contain"
+            />
+          </div>
+        )}
 
         {item.is_flagged && (
           <div className="mb-4 rounded-lg bg-flagged/20 border border-warning px-3 py-2 text-xs text-warning-foreground">
