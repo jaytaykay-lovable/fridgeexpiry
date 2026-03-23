@@ -4,7 +4,18 @@ import { supabase } from '@/integrations/supabase/client';
 const BUCKET = 'fridge-images';
 const SIGNED_URL_EXPIRY = 3600; // 1 hour
 
-export function useSignedUrl(imageUrl: string | null | undefined) {
+interface TransformOptions {
+  width?: number;
+  height?: number;
+  resize?: 'cover' | 'contain' | 'fill';
+  format?: 'origin' | 'avif' | 'webp';
+  quality?: number;
+}
+
+export function useSignedUrl(
+  imageUrl: string | null | undefined,
+  transform?: TransformOptions
+) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -13,7 +24,7 @@ export function useSignedUrl(imageUrl: string | null | undefined) {
       return;
     }
 
-    // If it's already a full signed URL or data URL, use as-is
+    // If it's already a data URL, use as-is
     if (imageUrl.startsWith('data:')) {
       setSignedUrl(imageUrl);
       return;
@@ -23,7 +34,7 @@ export function useSignedUrl(imageUrl: string | null | undefined) {
     let storagePath = imageUrl;
     const bucketPrefix = `/storage/v1/object/public/${BUCKET}/`;
     const bucketPrefixAlt = `/storage/v1/object/${BUCKET}/`;
-    
+
     if (imageUrl.includes(bucketPrefix)) {
       storagePath = imageUrl.split(bucketPrefix)[1];
     } else if (imageUrl.includes(bucketPrefixAlt)) {
@@ -34,9 +45,14 @@ export function useSignedUrl(imageUrl: string | null | undefined) {
       return;
     }
 
+    const options: { transform?: TransformOptions } = {};
+    if (transform) {
+      options.transform = transform;
+    }
+
     supabase.storage
       .from(BUCKET)
-      .createSignedUrl(storagePath, SIGNED_URL_EXPIRY)
+      .createSignedUrl(storagePath, SIGNED_URL_EXPIRY, options)
       .then(({ data, error }) => {
         if (error) {
           console.error('Failed to create signed URL:', error);
@@ -45,7 +61,7 @@ export function useSignedUrl(imageUrl: string | null | undefined) {
           setSignedUrl(data.signedUrl);
         }
       });
-  }, [imageUrl]);
+  }, [imageUrl, transform?.width, transform?.height, transform?.quality]);
 
   return signedUrl;
 }

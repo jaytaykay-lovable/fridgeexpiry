@@ -14,7 +14,13 @@ interface FoodCardProps {
 
 export default function FoodCard({ item, onConsume, onWaste, onClick }: FoodCardProps) {
   const [offset, setOffset] = useState(0);
-  const imageUrl = useSignedUrl(item.image_url);
+  const imageUrl = useSignedUrl(item.image_url, {
+    width: 112,
+    height: 112,
+    resize: 'cover',
+    format: 'webp',
+    quality: 75,
+  });
   const [swiping, setSwiping] = useState(false);
   const [dismissed, setDismissed] = useState<'left' | 'right' | null>(null);
 
