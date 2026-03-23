@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 const BUCKET = 'fridge-images';
 const SIGNED_URL_EXPIRY = 3600; // 1 hour
 
-interface TransformOptions {
+export interface TransformOptions {
   width?: number;
   height?: number;
   resize?: 'cover' | 'contain' | 'fill';
