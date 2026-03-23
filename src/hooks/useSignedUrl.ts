@@ -45,11 +45,6 @@ export function useSignedUrl(
       return;
     }
 
-    const options: { transform?: TransformOptions } = {};
-    if (transform) {
-      options.transform = transform;
-    }
-
     supabase.storage
       .from(BUCKET)
       .createSignedUrl(storagePath, SIGNED_URL_EXPIRY, options)
