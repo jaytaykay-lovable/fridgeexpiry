@@ -19,7 +19,35 @@ export interface UserSettings {
   updated_at: string;
 }
 
+export interface IngestionQueueItem {
+  id: string;
+  user_id: string;
+  input_type: 'text' | 'voice' | 'image';
+  raw_payload: string | null;
+  image_path: string | null;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  extracted_name: string | null;
+  extracted_date: string | null;
+  extracted_category: string | null;
+  is_flagged: boolean;
+  error_message: string | null;
+  created_at: string;
+}
+
 export const FOOD_CATEGORIES = [
+  'Dairy',
+  'Meat',
+  'Seafood',
+  'Fruits',
+  'Vegetables',
+  'Grains',
+  'Beverages',
+  'Snacks',
+  'Condiments',
+  'Frozen',
+  'Bakery',
+  'Other',
+] as const;
   'Dairy',
   'Meat',
   'Seafood',
