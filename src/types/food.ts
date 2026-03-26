@@ -48,16 +48,3 @@ export const FOOD_CATEGORIES = [
   'Bakery',
   'Other',
 ] as const;
-  'Dairy',
-  'Meat',
-  'Seafood',
-  'Fruits',
-  'Vegetables',
-  'Grains',
-  'Beverages',
-  'Snacks',
-  'Condiments',
-  'Frozen',
-  'Bakery',
-  'Other',
-] as const;
