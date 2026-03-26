@@ -6,7 +6,6 @@ interface FridgeState {
   items: FoodItem[];
   settings: UserSettings | null;
   loading: boolean;
-  processingImage: boolean;
 
   fetchItems: () => Promise<void>;
   fetchSettings: () => Promise<void>;
@@ -14,17 +13,12 @@ interface FridgeState {
   markConsumed: (id: string) => Promise<void>;
   markWasted: (id: string) => Promise<void>;
   updateItem: (id: string, updates: Partial<Pick<FoodItem, 'name' | 'category' | 'expiry_date'>>) => Promise<void>;
-  addItems: (items: Omit<FoodItem, 'id' | 'created_at' | 'updated_at'>[]) => Promise<void>;
-  setProcessingImage: (v: boolean) => void;
 }
 
 export const useFridgeStore = create<FridgeState>((set, get) => ({
   items: [],
   settings: null,
   loading: false,
-  processingImage: false,
-
-  setProcessingImage: (v) => set({ processingImage: v }),
 
   fetchItems: async () => {
     set({ loading: true });
@@ -67,7 +61,6 @@ export const useFridgeStore = create<FridgeState>((set, get) => ({
   },
 
   markConsumed: async (id) => {
-    // Optimistic update
     const prev = get().items;
     set({ items: prev.filter((i) => i.id !== id) });
 
@@ -108,21 +101,6 @@ export const useFridgeStore = create<FridgeState>((set, get) => ({
 
     if (error) {
       set({ items: prev });
-    }
-  },
-
-  addItems: async (items) => {
-    const { data, error } = await supabase
-      .from('food_items')
-      .insert(items as never[])
-      .select();
-
-    if (!error && data) {
-      set((s) => ({
-        items: [...s.items, ...(data as unknown as FoodItem[])].sort(
-          (a, b) => new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime()
-        ),
-      }));
     }
   },
 }));
