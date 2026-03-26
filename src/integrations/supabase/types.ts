@@ -53,6 +53,51 @@ export type Database = {
         }
         Relationships: []
       }
+      ingestion_queue: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          extracted_category: string | null
+          extracted_date: string | null
+          extracted_name: string | null
+          id: string
+          image_path: string | null
+          input_type: string
+          is_flagged: boolean | null
+          raw_payload: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          extracted_category?: string | null
+          extracted_date?: string | null
+          extracted_name?: string | null
+          id?: string
+          image_path?: string | null
+          input_type?: string
+          is_flagged?: boolean | null
+          raw_payload?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          extracted_category?: string | null
+          extracted_date?: string | null
+          extracted_name?: string | null
+          id?: string
+          image_path?: string | null
+          input_type?: string
+          is_flagged?: boolean | null
+          raw_payload?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string
@@ -109,7 +154,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      commit_approved_items: { Args: never; Returns: number }
     }
     Enums: {
       food_status: "active" | "consumed" | "wasted"
