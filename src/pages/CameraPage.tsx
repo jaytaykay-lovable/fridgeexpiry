@@ -12,7 +12,7 @@ export default function CameraPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const { processingImage, setProcessingImage, addItems, settings, fetchSettings } = useFridgeStore();
+  const { processingImage, setProcessingImage, settings, fetchSettings } = useFridgeStore();
   const [preview, setPreview] = useState<string | null>(null);
 
   const processFile = async (file: File) => {
@@ -20,11 +20,9 @@ export default function CameraPage() {
     setPreview(URL.createObjectURL(file));
 
     try {
-      // Get user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Ensure settings loaded
       if (!settings) await fetchSettings();
 
       // Upload to storage
@@ -47,16 +45,21 @@ export default function CameraPage() {
         console.warn('Thumbnail generation failed, continuing without:', thumbErr);
       }
 
-      // Create a signed URL for AI processing (short-lived)
-      const { data: signedData, error: signedError } = await supabase.storage
-        .from('fridge-images')
-        .createSignedUrl(path, 600); // 10 min for AI processing
+      // Insert into ingestion_queue
+      const { data: queueItem, error: queueError } = await supabase
+        .from('ingestion_queue')
+        .insert({
+          user_id: user.id,
+          input_type: 'image',
+          image_path: path,
+          status: 'pending',
+        } as any)
+        .select()
+        .single();
 
-      if (signedError || !signedData) throw signedError || new Error('Failed to create signed URL');
+      if (queueError || !queueItem) throw queueError || new Error('Failed to create queue item');
 
-      const imageUrl = signedData.signedUrl;
-
-      // Call edge function
+      // Call edge function with queue_id
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
       if (!accessToken) throw new Error('Session expired. Please log in again.');
@@ -71,7 +74,7 @@ export default function CameraPage() {
             'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           },
           body: JSON.stringify({
-            image_url: imageUrl,
+            queue_id: (queueItem as any).id,
             default_expiry_days: settings?.default_expiry_days ?? 7,
           }),
         }
@@ -82,31 +85,10 @@ export default function CameraPage() {
         throw new Error(errBody.error || `Processing failed (${response.status})`);
       }
 
-      const data = await response.json();
-
-      const items = (data.items || []).map((item: any) => ({
-        user_id: user.id,
-        name: item.name,
-        category: item.category || 'Other',
-        expiry_date: item.expiry_date,
-        is_flagged: item.is_flagged || false,
-        image_url: path,
-        status: 'active' as const,
-      }));
-
-      if (items.length > 0) {
-        await addItems(items);
-        toast({
-          title: `Added ${items.length} item${items.length > 1 ? 's' : ''}`,
-          description: 'Check your fridge inventory',
-        });
-      } else {
-        toast({
-          title: 'No items detected',
-          description: 'Try a clearer photo of food items',
-          variant: 'destructive',
-        });
-      }
+      toast({
+        title: 'Image processed',
+        description: 'Check your review queue to approve items',
+      });
 
       navigate('/');
     } catch (err: any) {
