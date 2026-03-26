@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Camera, Upload, ImageIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useFridgeStore } from '@/store/useFridgeStore';
+import { useIngestionStore } from '@/store/useIngestionStore';
 import ProcessingOverlay from '@/components/ProcessingOverlay';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
@@ -12,12 +13,12 @@ export default function CameraPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const { processingImage, setProcessingImage, settings, fetchSettings } = useFridgeStore();
-  const [preview, setPreview] = useState<string | null>(null);
+  const { settings, fetchSettings } = useFridgeStore();
+  const { addImageItem } = useIngestionStore();
+  const [processing, setProcessing] = useState(false);
 
   const processFile = async (file: File) => {
-    setProcessingImage(true);
-    setPreview(URL.createObjectURL(file));
+    setProcessing(true);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -45,49 +46,12 @@ export default function CameraPage() {
         console.warn('Thumbnail generation failed, continuing without:', thumbErr);
       }
 
-      // Insert into ingestion_queue
-      const { data: queueItem, error: queueError } = await supabase
-        .from('ingestion_queue')
-        .insert({
-          user_id: user.id,
-          input_type: 'image',
-          image_path: path,
-          status: 'pending',
-        } as any)
-        .select()
-        .single();
-
-      if (queueError || !queueItem) throw queueError || new Error('Failed to create queue item');
-
-      // Call edge function with queue_id
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
-      if (!accessToken) throw new Error('Session expired. Please log in again.');
-
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-food-image`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`,
-            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          },
-          body: JSON.stringify({
-            queue_id: (queueItem as any).id,
-            default_expiry_days: settings?.default_expiry_days ?? 7,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errBody = await response.json().catch(() => ({}));
-        throw new Error(errBody.error || `Processing failed (${response.status})`);
-      }
+      // Insert into queue and trigger processing via the ingestion store
+      await addImageItem(path, settings?.default_expiry_days ?? 7);
 
       toast({
-        title: 'Image processed',
-        description: 'Check your review queue to approve items',
+        title: 'Image uploaded',
+        description: 'AI is processing — check your review queue',
       });
 
       navigate('/');
@@ -99,8 +63,7 @@ export default function CameraPage() {
         variant: 'destructive',
       });
     } finally {
-      setProcessingImage(false);
-      setPreview(null);
+      setProcessing(false);
     }
   };
 
@@ -109,7 +72,7 @@ export default function CameraPage() {
     if (file) processFile(file);
   };
 
-  if (processingImage) return <ProcessingOverlay />;
+  if (processing) return <ProcessingOverlay />;
 
   return (
     <div className="page-container flex flex-col items-center justify-center min-h-[80vh]">
