@@ -36,7 +36,8 @@ const SORT_LABELS: Record<SortOption, string> = {
 };
 
 export default function InventoryPage() {
-  const { items, loading, fetchItems, markConsumed, markWasted, updateItem } = useFridgeStore();
+  const { items, loading, fetchItems, fetchSettings, markConsumed, markWasted, updateItem } = useFridgeStore();
+  const { subscribe, unsubscribe, fetchQueue } = useIngestionStore();
   const [editingItem, setEditingItem] = useState<FoodItem | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
@@ -44,7 +45,11 @@ export default function InventoryPage() {
 
   useEffect(() => {
     fetchItems();
-  }, [fetchItems]);
+    fetchSettings();
+    fetchQueue();
+    subscribe();
+    return () => unsubscribe();
+  }, [fetchItems, fetchSettings, fetchQueue, subscribe, unsubscribe]);
 
   const filteredItems = useMemo(() => {
     let result = items.filter((item) => {
@@ -96,6 +101,12 @@ export default function InventoryPage() {
           {items.filter(i => i.status === 'active').length} active item{items.filter(i => i.status === 'active').length !== 1 ? 's' : ''}
         </p>
       </header>
+
+      {/* Quick Add */}
+      <QuickAddInput />
+
+      {/* Review List (ingestion queue) */}
+      <ReviewList />
 
       {/* Status filter chips */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-2">
