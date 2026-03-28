@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -114,14 +114,48 @@
     @apply fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t bg-card/95 backdrop-blur-lg;
     padding-bottom: env(safe-area-inset-bottom, 0px);
     height: calc(64px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -10px 24px hsl(var(--foreground) / 0.06);
   }
 
   .bottom-nav-item {
-    @apply flex flex-col items-center justify-center gap-0.5 py-2 px-4 text-muted-foreground transition-colors;
+    @apply relative flex min-w-[74px] flex-col items-center justify-center gap-0.5 rounded-xl px-4 py-2 text-muted-foreground transition-all duration-200;
+  }
+
+  .bottom-nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    width: 4px;
+    height: 4px;
+    border-radius: 9999px;
+    background: hsl(var(--primary));
+    opacity: 0;
+    transform: translateY(2px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+
+  .bottom-nav-item:hover {
+    background: hsl(var(--accent) / 0.55);
+  }
+
+  .bottom-nav-item:active {
+    transform: scale(0.94);
   }
 
   .bottom-nav-item.active {
     @apply text-primary;
+    background: hsl(var(--primary) / 0.12);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px hsl(var(--primary) / 0.16);
+  }
+
+  .bottom-nav-item.active::after {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .bottom-nav-item.pending {
+    opacity: 0.6;
   }
 
   .page-container {
@@ -143,6 +177,14 @@
 
   .swipe-bg-waste {
     background-color: hsl(var(--swipe-waste));
+  }
+
+  .chip-flash-wasted {
+    animation: chip-flash-wasted 0.7s ease-out;
+  }
+
+  .chip-flash-consumed {
+    animation: chip-flash-consumed 0.7s ease-out;
   }
 
   .category-badge {
@@ -180,5 +222,41 @@
   @keyframes shimmer {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
+  }
+
+  @keyframes chip-flash-wasted {
+    0% {
+      background-color: hsl(var(--card));
+      border-color: hsl(var(--border));
+      color: hsl(var(--muted-foreground));
+    }
+    35% {
+      background-color: hsl(var(--swipe-waste));
+      border-color: hsl(var(--swipe-waste));
+      color: hsl(var(--destructive-foreground));
+    }
+    100% {
+      background-color: hsl(var(--card));
+      border-color: hsl(var(--border));
+      color: hsl(var(--muted-foreground));
+    }
+  }
+
+  @keyframes chip-flash-consumed {
+    0% {
+      background-color: hsl(var(--card));
+      border-color: hsl(var(--border));
+      color: hsl(var(--muted-foreground));
+    }
+    35% {
+      background-color: hsl(var(--swipe-consume));
+      border-color: hsl(var(--swipe-consume));
+      color: hsl(var(--success-foreground));
+    }
+    100% {
+      background-color: hsl(var(--card));
+      border-color: hsl(var(--border));
+      color: hsl(var(--muted-foreground));
+    }
   }
 }

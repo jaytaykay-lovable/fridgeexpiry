@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { differenceInDays } from 'date-fns';
 import { useFridgeStore } from '@/store/useFridgeStore';
 import { useIngestionStore } from '@/store/useIngestionStore';
 import FoodCard from '@/components/FoodCard';
@@ -17,15 +16,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-type StatusFilter = 'active' | 'expiring' | 'expired' | 'consumed' | 'wasted';
+type StatusFilter = 'wasted' | 'active' | 'consumed';
 type SortOption = 'expiry_asc' | 'expiry_desc' | 'name' | 'recent';
 
 const STATUS_LABELS: Record<StatusFilter, string> = {
-  active: 'Active',
-  expiring: 'Expiring Soon',
-  expired: 'Expired',
-  consumed: 'Consumed',
   wasted: 'Wasted',
+  active: 'Active',
+  consumed: 'Consumed',
 };
 
 const SORT_LABELS: Record<SortOption, string> = {
@@ -36,10 +33,11 @@ const SORT_LABELS: Record<SortOption, string> = {
 };
 
 export default function InventoryPage() {
-  const { items, loading, fetchItems, fetchSettings, markConsumed, markWasted, updateItem } = useFridgeStore();
+  const { items, loading, fetchItems, fetchSettings, markConsumed, markWasted, restoreItem, updateItem } = useFridgeStore();
   const { subscribe, unsubscribe, fetchQueue } = useIngestionStore();
   const [editingItem, setEditingItem] = useState<FoodItem | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
+  const [flashingStatus, setFlashingStatus] = useState<StatusFilter | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>('expiry_asc');
 
@@ -54,18 +52,13 @@ export default function InventoryPage() {
   const filteredItems = useMemo(() => {
     let result = items.filter((item) => {
       // Status filter
-      const daysLeft = differenceInDays(new Date(item.expiry_date), new Date());
       switch (statusFilter) {
-        case 'active':
-          return item.status === 'active';
-        case 'expiring':
-          return item.status === 'active' && daysLeft >= 0 && daysLeft <= 2;
-        case 'expired':
-          return item.status === 'active' && daysLeft < 0;
-        case 'consumed':
-          return item.status === 'consumed';
         case 'wasted':
           return item.status === 'wasted';
+        case 'active':
+          return item.status === 'active';
+        case 'consumed':
+          return item.status === 'consumed';
       }
     });
 
@@ -91,7 +84,35 @@ export default function InventoryPage() {
     return result;
   }, [items, statusFilter, categoryFilter, sortOption]);
 
-  const showSwipeHint = statusFilter === 'active' || statusFilter === 'expiring' || statusFilter === 'expired';
+  useEffect(() => {
+    if (!flashingStatus) return;
+    const timeout = setTimeout(() => setFlashingStatus(null), 700);
+    return () => clearTimeout(timeout);
+  }, [flashingStatus]);
+
+  const handleConsume = async (id: string) => {
+    const success = await markConsumed(id);
+    if (success) {
+      setFlashingStatus('consumed');
+    }
+  };
+
+  const handleWaste = async (id: string) => {
+    const success = await markWasted(id);
+    if (success) {
+      setFlashingStatus('wasted');
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    const success = await restoreItem(id);
+    if (success) {
+      setFlashingStatus('active');
+      setEditingItem(null);
+    }
+  };
+
+  const showSwipeHint = statusFilter === 'active';
 
   return (
     <div className="page-container">
@@ -109,16 +130,20 @@ export default function InventoryPage() {
       <ReviewList />
 
       {/* Status filter chips */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-2">
+      <div className="mb-2 flex items-stretch justify-center gap-3">
         {(Object.keys(STATUS_LABELS) as StatusFilter[]).map((status) => (
           <button
             key={status}
             onClick={() => setStatusFilter(status)}
-            className={`flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors border ${
-              statusFilter === status
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-card text-muted-foreground border-border hover:border-primary/40'
-            }`}
+            className={`flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors border ${statusFilter === status
+              ? 'bg-primary text-primary-foreground border-primary'
+              : 'bg-card text-muted-foreground border-border hover:border-primary/40'
+              } ${flashingStatus === status
+                ? status === 'wasted'
+                  ? 'chip-flash-wasted'
+                  : 'chip-flash-consumed'
+                : ''
+              }`}
           >
             {STATUS_LABELS[status]}
           </button>
@@ -193,8 +218,8 @@ export default function InventoryPage() {
             <FoodCard
               key={item.id}
               item={item}
-              onConsume={markConsumed}
-              onWaste={markWasted}
+              onConsume={handleConsume}
+              onWaste={handleWaste}
               onClick={setEditingItem}
             />
           ))}
@@ -211,6 +236,7 @@ export default function InventoryPage() {
         <EditFoodModal
           item={editingItem}
           onSave={updateItem}
+          onUndo={handleRestore}
           onClose={() => setEditingItem(null)}
         />
       )}

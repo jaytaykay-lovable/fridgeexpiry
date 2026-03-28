@@ -1,9 +1,7 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { Home, Camera, User } from 'lucide-react';
 
 export default function BottomNav() {
-  const location = useLocation();
-
   const links = [
     { to: '/', icon: Home, label: 'Fridge' },
     { to: '/camera', icon: Camera, label: 'Add' },
@@ -16,8 +14,8 @@ export default function BottomNav() {
         <NavLink
           key={to}
           to={to}
-          className={() =>
-            `bottom-nav-item ${location.pathname === to ? 'active' : ''}`
+          className={({ isActive, isPending }) =>
+            `bottom-nav-item ${isActive ? 'active' : ''} ${isPending ? 'pending' : ''}`
           }
         >
           <Icon size={22} />

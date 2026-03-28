@@ -3,6 +3,33 @@ import { supabase } from '@/integrations/supabase/client';
 import type { IngestionQueueItem } from '@/types/food';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
+const triggerQueueProcessing = async (queueId: string, defaultExpiryDays: number) => {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData?.session?.access_token;
+  if (!accessToken) throw new Error('Session expired');
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-food-image`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+        'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      },
+      body: JSON.stringify({
+        queue_id: queueId,
+        default_expiry_days: defaultExpiryDays,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const errBody = await response.json().catch(() => ({}));
+    throw new Error(errBody.error || `Processing failed (${response.status})`);
+  }
+};
+
 interface IngestionState {
   queueItems: IngestionQueueItem[];
   loading: boolean;
@@ -112,31 +139,24 @@ export const useIngestionStore = create<IngestionState>((set, get) => ({
       queueItems: [optimistic, ...s.queueItems.filter((i) => i.id !== optimistic.id)],
     }));
 
-    // Trigger the edge function
-    const { data: sessionData } = await supabase.auth.getSession();
-    const accessToken = sessionData?.session?.access_token;
-    if (!accessToken) throw new Error('Session expired');
+    // Fire processing in the background so capture/add flows stay responsive.
+    void triggerQueueProcessing((queueItem as any).id, defaultExpiryDays).catch(async (err) => {
+      console.error('Background image processing trigger failed:', err);
+      const message = err instanceof Error ? err.message : 'Failed to start processing';
 
-    const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-food-image`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify({
-          queue_id: (queueItem as any).id,
-          default_expiry_days: defaultExpiryDays,
-        }),
-      }
-    );
+      await supabase
+        .from('ingestion_queue')
+        .update({ status: 'failed' as any, error_message: message })
+        .eq('id', (queueItem as any).id);
 
-    if (!response.ok) {
-      const errBody = await response.json().catch(() => ({}));
-      throw new Error(errBody.error || `Processing failed (${response.status})`);
-    }
+      set((s) => ({
+        queueItems: s.queueItems.map((i) =>
+          i.id === (queueItem as any).id
+            ? { ...i, status: 'failed', error_message: message }
+            : i
+        ),
+      }));
+    });
   },
 
   addTextItem: async (text, defaultExpiryDays) => {
@@ -161,31 +181,24 @@ export const useIngestionStore = create<IngestionState>((set, get) => ({
       queueItems: [optimistic, ...s.queueItems.filter((i) => i.id !== optimistic.id)],
     }));
 
-    // Trigger edge function
-    const { data: sessionData } = await supabase.auth.getSession();
-    const accessToken = sessionData?.session?.access_token;
-    if (!accessToken) throw new Error('Session expired');
+    // Fire processing in the background so users can submit repeatedly.
+    void triggerQueueProcessing((queueItem as any).id, defaultExpiryDays).catch(async (err) => {
+      console.error('Background text processing trigger failed:', err);
+      const message = err instanceof Error ? err.message : 'Failed to start processing';
 
-    const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-food-image`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify({
-          queue_id: (queueItem as any).id,
-          default_expiry_days: defaultExpiryDays,
-        }),
-      }
-    );
+      await supabase
+        .from('ingestion_queue')
+        .update({ status: 'failed' as any, error_message: message })
+        .eq('id', (queueItem as any).id);
 
-    if (!response.ok) {
-      const errBody = await response.json().catch(() => ({}));
-      throw new Error(errBody.error || `Processing failed (${response.status})`);
-    }
+      set((s) => ({
+        queueItems: s.queueItems.map((i) =>
+          i.id === (queueItem as any).id
+            ? { ...i, status: 'failed', error_message: message }
+            : i
+        ),
+      }));
+    });
   },
 
   approveAll: async () => {

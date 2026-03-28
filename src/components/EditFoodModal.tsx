@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { X } from 'lucide-react';
+import { RotateCcw, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import type { FoodItem } from '@/types/food';
 import { FOOD_CATEGORIES } from '@/types/food';
 import { Button } from '@/components/ui/button';
@@ -12,10 +13,11 @@ import { useSignedUrl } from '@/hooks/useSignedUrl';
 interface EditFoodModalProps {
   item: FoodItem;
   onSave: (id: string, updates: { name: string; category: string; expiry_date: string }) => void;
+  onUndo: (id: string) => void;
   onClose: () => void;
 }
 
-export default function EditFoodModal({ item, onSave, onClose }: EditFoodModalProps) {
+export default function EditFoodModal({ item, onSave, onUndo, onClose }: EditFoodModalProps) {
   const [name, setName] = useState(item.name);
   const [category, setCategory] = useState(item.category);
   const [expiryDate, setExpiryDate] = useState(
@@ -29,7 +31,7 @@ export default function EditFoodModal({ item, onSave, onClose }: EditFoodModalPr
     onClose();
   };
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative z-[95] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-card p-6 animate-fade-in">
@@ -86,6 +88,18 @@ export default function EditFoodModal({ item, onSave, onClose }: EditFoodModalPr
             />
           </div>
 
+          {item.status !== 'active' && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => onUndo(item.id)}
+            >
+              <RotateCcw size={16} />
+              Undo {item.status === 'consumed' ? 'Consumed' : 'Wasted'}
+            </Button>
+          )}
+
           <Button type="submit" className="w-full">
             Save Changes
           </Button>
@@ -93,4 +107,6 @@ export default function EditFoodModal({ item, onSave, onClose }: EditFoodModalPr
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

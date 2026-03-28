@@ -25,6 +25,11 @@ export default function FoodCard({ item, onConsume, onWaste, onClick }: FoodCard
   const imageUrl = thumbnailUrl || originalUrl;
   const [swiping, setSwiping] = useState(false);
   const [dismissed, setDismissed] = useState<'left' | 'right' | null>(null);
+  const absOffset = Math.abs(offset);
+  const swipeThreshold = 120;
+  const isSwipeActive = absOffset > 8;
+  const canSwipeRight = item.status !== 'consumed';
+  const canSwipeLeft = item.status !== 'wasted';
 
   const daysLeft = differenceInDays(new Date(item.expiry_date), new Date());
   const isExpired = daysLeft < 0;
@@ -32,11 +37,28 @@ export default function FoodCard({ item, onConsume, onWaste, onClick }: FoodCard
 
   const handlers = useSwipeable({
     onSwiping: (e) => {
+      // Only treat movement as swipe when horizontal intent is clearly stronger than vertical scrolling.
+      const isHorizontalIntent = Math.abs(e.deltaX) > Math.abs(e.deltaY) * 1.35;
+      if (!isHorizontalIntent || Math.abs(e.deltaX) < 14) {
+        return;
+      }
+
+      const isRightSwipe = e.deltaX > 0;
+      if ((isRightSwipe && !canSwipeRight) || (!isRightSwipe && !canSwipeLeft)) {
+        return;
+      }
+
       setSwiping(true);
       setOffset(e.deltaX);
     },
     onSwipedLeft: () => {
-      if (Math.abs(offset) > 80) {
+      if (!canSwipeLeft) {
+        setOffset(0);
+        setSwiping(false);
+        return;
+      }
+
+      if (Math.abs(offset) >= swipeThreshold) {
         setDismissed('left');
         setTimeout(() => onWaste(item.id), 300);
       } else {
@@ -45,7 +67,13 @@ export default function FoodCard({ item, onConsume, onWaste, onClick }: FoodCard
       }
     },
     onSwipedRight: () => {
-      if (Math.abs(offset) > 80) {
+      if (!canSwipeRight) {
+        setOffset(0);
+        setSwiping(false);
+        return;
+      }
+
+      if (Math.abs(offset) >= swipeThreshold) {
         setDismissed('right');
         setTimeout(() => onConsume(item.id), 300);
       } else {
@@ -55,24 +83,29 @@ export default function FoodCard({ item, onConsume, onWaste, onClick }: FoodCard
     },
     trackMouse: false,
     trackTouch: true,
-    preventScrollOnSwipe: true,
+    delta: 26,
+    preventScrollOnSwipe: false,
   });
 
   const expiryLabel = isExpired
     ? `Expired ${Math.abs(daysLeft)}d ago`
     : daysLeft === 0
-    ? 'Expires today'
-    : `${daysLeft}d left`;
+      ? 'Expires today'
+      : `${daysLeft}d left`;
 
   return (
     <div className="relative overflow-hidden rounded-xl animate-fade-in">
       {/* Swipe backgrounds */}
-      <div className="absolute inset-0 flex">
-        <div className="flex-1 swipe-bg-consume flex items-center justify-start pl-5">
-          <Check className="text-success-foreground" size={24} />
-        </div>
-        <div className="flex-1 swipe-bg-waste flex items-center justify-end pr-5">
-          <Trash2 className="text-destructive-foreground" size={24} />
+      <div
+        className={`absolute inset-0 ${offset >= 0 ? 'swipe-bg-consume' : 'swipe-bg-waste'}`}
+        style={{ opacity: isSwipeActive ? Math.min(absOffset / swipeThreshold, 1) : 0 }}
+      >
+        <div className={`h-full w-full flex items-center ${offset >= 0 ? 'justify-start pl-5' : 'justify-end pr-5'}`}>
+          {offset >= 0 ? (
+            <Check className="text-success-foreground" size={24} />
+          ) : (
+            <Trash2 className="text-destructive-foreground" size={24} />
+          )}
         </div>
       </div>
 
@@ -80,11 +113,9 @@ export default function FoodCard({ item, onConsume, onWaste, onClick }: FoodCard
       <div
         {...handlers}
         onClick={() => !swiping && onClick(item)}
-        className={`food-card relative z-10 flex items-center gap-3 p-3 cursor-pointer ${
-          item.is_flagged ? 'food-card-flagged' : ''
-        } ${dismissed === 'left' ? 'animate-slide-left' : ''} ${
-          dismissed === 'right' ? 'animate-slide-right' : ''
-        }`}
+        className={`food-card relative z-10 flex items-center gap-3 p-3 cursor-pointer ${item.is_flagged ? 'food-card-flagged' : ''
+          } ${dismissed === 'left' ? 'animate-slide-left' : ''} ${dismissed === 'right' ? 'animate-slide-right' : ''
+          }`}
         style={{
           transform: dismissed ? undefined : `translateX(${offset}px)`,
           transition: swiping ? 'none' : 'transform 0.2s ease-out',
@@ -122,13 +153,12 @@ export default function FoodCard({ item, onConsume, onWaste, onClick }: FoodCard
         {/* Expiry */}
         <div className="text-right flex-shrink-0">
           <p
-            className={`text-xs font-semibold ${
-              isExpired
-                ? 'text-destructive'
-                : isExpiringSoon
+            className={`text-xs font-semibold ${isExpired
+              ? 'text-destructive'
+              : isExpiringSoon
                 ? 'text-warning'
                 : 'text-muted-foreground'
-            }`}
+              }`}
           >
             {expiryLabel}
           </p>

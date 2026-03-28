@@ -10,8 +10,9 @@ interface FridgeState {
   fetchItems: () => Promise<void>;
   fetchSettings: () => Promise<void>;
   updateSettings: (updates: Partial<Pick<UserSettings, 'default_expiry_days' | 'notify_days_before'>>) => Promise<void>;
-  markConsumed: (id: string) => Promise<void>;
-  markWasted: (id: string) => Promise<void>;
+  markConsumed: (id: string) => Promise<boolean>;
+  markWasted: (id: string) => Promise<boolean>;
+  restoreItem: (id: string) => Promise<boolean>;
   updateItem: (id: string, updates: Partial<Pick<FoodItem, 'name' | 'category' | 'expiry_date'>>) => Promise<void>;
 }
 
@@ -71,7 +72,10 @@ export const useFridgeStore = create<FridgeState>((set, get) => ({
 
     if (error) {
       set({ items: prev });
+      return false;
     }
+
+    return true;
   },
 
   markWasted: async (id) => {
@@ -85,7 +89,33 @@ export const useFridgeStore = create<FridgeState>((set, get) => ({
 
     if (error) {
       set({ items: prev });
+      return false;
     }
+
+    return true;
+  },
+
+  restoreItem: async (id) => {
+    const prev = get().items;
+    set({
+      items: prev.map((i) =>
+        i.id === id
+          ? { ...i, status: 'active', updated_at: new Date().toISOString() }
+          : i,
+      ),
+    });
+
+    const { error } = await supabase
+      .from('food_items')
+      .update({ status: 'active' as never, updated_at: new Date().toISOString() })
+      .eq('id', id);
+
+    if (error) {
+      set({ items: prev });
+      return false;
+    }
+
+    return true;
   },
 
   updateItem: async (id, updates) => {
