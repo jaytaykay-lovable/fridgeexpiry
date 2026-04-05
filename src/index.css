@@ -259,4 +259,12 @@
       color: hsl(var(--muted-foreground));
     }
   }
+
+  .recipe-card-image {
+    @apply w-full h-full object-cover;
+  }
+
+  .recipe-card-image-fallback {
+    @apply flex items-center justify-center bg-muted text-muted-foreground text-4xl;
+  }
 }
