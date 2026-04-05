@@ -10,6 +10,7 @@ import InventoryPage from "@/pages/InventoryPage";
 import CameraPage from "@/pages/CameraPage";
 import ProfilePage from "@/pages/ProfilePage";
 import AuthPage from "@/pages/AuthPage";
+import { RecipeDiscoveryPage } from "@/pages/RecipeDiscoveryPage";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 import { registerServiceWorker } from "@/lib/pushNotifications";
@@ -99,6 +100,7 @@ function AppRoutes() {
               <Route path="/" element={<InventoryPage />} />
               <Route path="/camera" element={<CameraPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/discover" element={<RecipeDiscoveryPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </motion.main>
