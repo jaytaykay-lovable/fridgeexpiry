@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useFridgeStore } from '@/store/useFridgeStore';
 import { useIngestionStore } from '@/store/useIngestionStore';
 import FoodCard from '@/components/FoodCard';
 import EditFoodModal from '@/components/EditFoodModal';
 import ReviewList from '@/components/ReviewList';
 import QuickAddInput from '@/components/QuickAddInput';
+import ExpiryBanner from '@/components/ExpiryBanner';
 import type { FoodItem } from '@/types/food';
 import { FOOD_CATEGORIES } from '@/types/food';
 import { Refrigerator, SlidersHorizontal, ChevronDown, X } from 'lucide-react';
@@ -35,6 +37,7 @@ const SORT_LABELS: Record<SortOption, string> = {
 export default function InventoryPage() {
   const { items, loading, fetchItems, fetchSettings, markConsumed, markWasted, restoreItem, updateItem } = useFridgeStore();
   const { subscribe, unsubscribe, fetchQueue } = useIngestionStore();
+  const navigate = useNavigate();
   const [editingItem, setEditingItem] = useState<FoodItem | null>(null);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
   const [flashingStatus, setFlashingStatus] = useState<StatusFilter | null>(null);
@@ -122,6 +125,11 @@ export default function InventoryPage() {
           {items.filter(i => i.status === 'active').length} active item{items.filter(i => i.status === 'active').length !== 1 ? 's' : ''}
         </p>
       </header>
+
+      <ExpiryBanner
+        items={items.filter((i) => i.status === 'active')}
+        onNavigate={() => navigate('/recipes')}
+      />
 
       {/* Quick Add */}
       <QuickAddInput />

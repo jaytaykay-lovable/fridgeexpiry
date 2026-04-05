@@ -1,9 +1,10 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Camera, User } from 'lucide-react';
+import { Home, Camera, User, BookOpen } from 'lucide-react';
 
 export default function BottomNav() {
   const links = [
     { to: '/', icon: Home, label: 'Fridge' },
+    { to: '/recipes', icon: BookOpen, label: 'Recipes' },
     { to: '/camera', icon: Camera, label: 'Add' },
     { to: '/profile', icon: User, label: 'Profile' },
   ];

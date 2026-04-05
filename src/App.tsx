@@ -19,7 +19,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 const queryClient = new QueryClient();
 
-const NAV_ROUTE_ORDER = ["/", "/camera", "/profile"] as const;
+const NAV_ROUTE_ORDER = ["/", "/recipes", "/camera", "/profile"] as const;
 
 const getRouteIndex = (pathname: string) => {
   const normalizedPath = pathname === "/" ? "/" : pathname.replace(/\/+$/, "");
@@ -99,10 +99,10 @@ function AppRoutes() {
           >
             <Routes location={location}>
               <Route path="/" element={<InventoryPage />} />
+              <Route path="/recipes" element={<RecipeDiscoveryPage />} />
+              <Route path="/recipes/:id" element={<RecipeDetailPage />} />
               <Route path="/camera" element={<CameraPage />} />
               <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/discover" element={<RecipeDiscoveryPage />} />
-              <Route path="/recipes/:id" element={<RecipeDetailPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </motion.main>
