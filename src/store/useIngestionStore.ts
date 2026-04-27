@@ -68,18 +68,23 @@ export const useIngestionStore = create<IngestionState>((set, get) => ({
     set({ loading: false });
   },
 
-  subscribe: () => {
+  subscribe: async () => {
     // Prevent duplicate subscriptions
     if (get().channel) return;
 
+    // Scope channel topic per-user so realtime RLS policies allow it
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
     const channel = supabase
-      .channel('ingestion-queue-changes')
+      .channel(`ingestion:${user.id}`, { config: { private: true } })
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'ingestion_queue',
+          filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
           const { eventType } = payload;
