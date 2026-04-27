@@ -8,7 +8,7 @@ import MoodChip from '@/components/MoodChip';
 import RecipeCard from '@/components/RecipeCard';
 import ExploreMoreRow from '@/components/ExploreMoreRow';
 import type { MoodType } from '@/types/recipe';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
 
 const MOODS: { label: string; value: MoodType }[] = [
   { label: 'Quick', value: 'quick' },
@@ -19,13 +19,15 @@ const MOODS: { label: string; value: MoodType }[] = [
 
 export function RecipeDiscoveryPage() {
   const navigate = useNavigate();
-  const { items } = useFridgeStore();
+  const { items, fetchItems } = useFridgeStore();
   const {
     selectedIngredients,
     mood,
     results,
+    exploreResults,
     isLoading,
     loadingNarration,
+    error,
     setSelectedIngredients,
     toggleIngredient,
     setMood,
@@ -33,6 +35,13 @@ export function RecipeDiscoveryPage() {
     surpriseMe,
     clearResults,
   } = useRecipeStore();
+
+  // Load fridge items if not loaded
+  useEffect(() => {
+    if (items.length === 0) {
+      fetchItems();
+    }
+  }, [items.length, fetchItems]);
 
   // Pre-select expiring items on mount
   useEffect(() => {
@@ -45,7 +54,7 @@ export function RecipeDiscoveryPage() {
     if (selectedIngredients.length === 0 && expiringItems.length > 0) {
       setSelectedIngredients(expiringItems.map((i) => i.name));
     }
-  }, [items, selectedIngredients, setSelectedIngredients]);
+  }, [items, selectedIngredients.length, setSelectedIngredients]);
 
   const activeItems = items.filter((i) => i.status === 'active');
   const expiringCount = activeItems.filter((item) => {
@@ -58,9 +67,6 @@ export function RecipeDiscoveryPage() {
   };
 
   const handleSurpriseMe = async () => {
-    // Use all active items
-    const allNames = activeItems.map((i) => i.name);
-    setSelectedIngredients(allNames);
     await surpriseMe();
   };
 
@@ -69,9 +75,78 @@ export function RecipeDiscoveryPage() {
   };
 
   return (
-    <div className="page-container">
+    <div className="page-container pb-24">
       <AnimatePresence mode="wait">
-        {!isLoading && results.length === 0 ? (
+        {isLoading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center py-20 space-y-4"
+          >
+            <div className="relative">
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+              <Sparkles className="h-4 w-4 absolute -top-1 -right-1 text-primary animate-pulse" />
+            </div>
+            <motion.p
+              key={loadingNarration}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-sm text-muted-foreground text-center max-w-xs"
+            >
+              {loadingNarration}
+            </motion.p>
+            {selectedIngredients.length > 0 && (
+              <p className="text-xs text-muted-foreground/70">
+                Using {selectedIngredients.slice(0, 3).join(', ')}
+                {selectedIngredients.length > 3 && ` +${selectedIngredients.length - 3} more`}
+              </p>
+            )}
+          </motion.div>
+        ) : results.length > 0 ? (
+          /* Results State */
+          <motion.div
+            key="results"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-4"
+          >
+            <div>
+              <h1 className="font-display text-xl font-bold">{results.length} recipes for you</h1>
+              <p className="text-sm text-muted-foreground">Using {selectedIngredients.length} ingredients</p>
+            </div>
+
+            {results.map((recipe, index) => (
+              <motion.div
+                key={recipe.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.08 }}
+              >
+                <RecipeCard
+                  recipe={recipe}
+                  onView={() => handleViewRecipe(recipe.id)}
+                />
+              </motion.div>
+            ))}
+
+            {exploreResults.length > 0 && (
+              <ExploreMoreRow
+                recipes={exploreResults}
+                onSelect={handleSelectFromExplore}
+              />
+            )}
+
+            <button
+              onClick={() => clearResults()}
+              className="w-full mt-4 rounded-xl border border-border bg-card text-foreground py-3 text-sm font-medium hover:bg-accent transition-colors"
+            >
+              Start over
+            </button>
+          </motion.div>
+        ) : (
           /* Selection State */
           <motion.div
             key="selection"
@@ -80,36 +155,54 @@ export function RecipeDiscoveryPage() {
             exit={{ opacity: 0 }}
             className="space-y-6"
           >
-            {/* Header */}
             <div>
               <h1 className="font-display text-2xl font-bold">What are we cooking?</h1>
-              {expiringCount > 0 && (
+              {expiringCount > 0 ? (
                 <p className="text-sm text-warning mt-1 font-medium">
                   {expiringCount} item{expiringCount !== 1 ? 's' : ''} expiring soon
+                </p>
+              ) : activeItems.length === 0 ? (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Add some food to your fridge to discover recipes.
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Pick what you'd like to cook with.
                 </p>
               )}
             </div>
 
-            {/* Ingredient Chips */}
-            <div>
-              <h2 className="text-sm font-semibold mb-2">Ingredients</h2>
-              <div className="flex flex-wrap gap-2">
-                {activeItems.map((item) => {
-                  const days = Math.ceil((new Date(item.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                  return (
-                    <IngredientChip
-                      key={item.id}
-                      name={item.name}
-                      isSelected={selectedIngredients.includes(item.name)}
-                      onToggle={() => toggleIngredient(item.name)}
-                      expiryDays={days}
-                    />
-                  );
-                })}
-              </div>
-            </div>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
+              >
+                <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </motion.div>
+            )}
 
-            {/* Mood Chips */}
+            {activeItems.length > 0 && (
+              <div>
+                <h2 className="text-sm font-semibold mb-2">Ingredients</h2>
+                <div className="flex flex-wrap gap-2">
+                  {activeItems.map((item) => {
+                    const days = Math.ceil((new Date(item.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                    return (
+                      <IngredientChip
+                        key={item.id}
+                        name={item.name}
+                        isSelected={selectedIngredients.includes(item.name)}
+                        onToggle={() => toggleIngredient(item.name)}
+                        expiryDays={days}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div>
               <h2 className="text-sm font-semibold mb-2">Mood</h2>
               <div className="flex flex-wrap gap-2">
@@ -124,7 +217,6 @@ export function RecipeDiscoveryPage() {
               </div>
             </div>
 
-            {/* CTAs */}
             <div className="space-y-3 pt-4">
               <motion.button
                 whileTap={{ scale: 0.98 }}
@@ -137,74 +229,12 @@ export function RecipeDiscoveryPage() {
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={handleSurpriseMe}
-                className="w-full rounded-xl border border-border bg-card text-foreground py-3 text-sm font-medium hover:bg-accent transition-colors"
+                disabled={activeItems.length === 0}
+                className="w-full rounded-xl border border-border bg-card text-foreground py-3 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
               >
-                Surprise me
+                <Sparkles size={14} /> Surprise me
               </motion.button>
             </div>
-          </motion.div>
-        ) : isLoading ? (
-          /* Loading State */
-          <motion.div
-            key="loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center py-20 space-y-4"
-          >
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">{loadingNarration}</p>
-          </motion.div>
-        ) : (
-          /* Results State */
-          <motion.div
-            key="results"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="space-y-4"
-          >
-            <div>
-              <h1 className="font-display text-xl font-bold">3 recipes for you</h1>
-              <p className="text-sm text-muted-foreground">Using {selectedIngredients.length} ingredients</p>
-            </div>
-
-            {results.slice(0, 3).map((recipe, index) => (
-              <motion.div
-                key={recipe.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <RecipeCard
-                  recipe={recipe}
-                  onView={() => handleViewRecipe(recipe.id)}
-                />
-              </motion.div>
-            ))}
-
-            <ExploreMoreRow
-              recipes={results.slice(3)}
-              onSelect={handleSelectFromExplore}
-            />
-
-            <button
-              onClick={() => {
-                clearResults();
-                setSelectedIngredients(expiringCount > 0
-                  ? activeItems
-                      .filter((item) => {
-                        const days = Math.ceil((new Date(item.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                        return days <= 3;
-                      })
-                      .map((i) => i.name)
-                  : []
-                );
-              }}
-              className="w-full mt-4 rounded-xl border border-border bg-card text-foreground py-3 text-sm font-medium hover:bg-accent transition-colors"
-            >
-              Start over
-            </button>
           </motion.div>
         )}
       </AnimatePresence>

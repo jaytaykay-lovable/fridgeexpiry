@@ -125,6 +125,90 @@ export type Database = {
         }
         Relationships: []
       }
+      recipe_cache: {
+        Row: {
+          cache_key: string
+          cached_at: string
+          id: string
+          image_url: string | null
+          likes: number | null
+          missed_ingredients: Json | null
+          payload: Json | null
+          ready_minutes: number | null
+          servings: number | null
+          source_url: string | null
+          spoonacular_id: number
+          title: string
+          used_ingredients: Json | null
+        }
+        Insert: {
+          cache_key: string
+          cached_at?: string
+          id?: string
+          image_url?: string | null
+          likes?: number | null
+          missed_ingredients?: Json | null
+          payload?: Json | null
+          ready_minutes?: number | null
+          servings?: number | null
+          source_url?: string | null
+          spoonacular_id: number
+          title: string
+          used_ingredients?: Json | null
+        }
+        Update: {
+          cache_key?: string
+          cached_at?: string
+          id?: string
+          image_url?: string | null
+          likes?: number | null
+          missed_ingredients?: Json | null
+          payload?: Json | null
+          ready_minutes?: number | null
+          servings?: number | null
+          source_url?: string | null
+          spoonacular_id?: number
+          title?: string
+          used_ingredients?: Json | null
+        }
+        Relationships: []
+      }
+      recipe_history: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          image_url: string | null
+          ingredients_used: Json | null
+          spoonacular_id: number
+          title: string | null
+          user_id: string
+          waste_saved_sgd: number | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          ingredients_used?: Json | null
+          spoonacular_id: number
+          title?: string | null
+          user_id: string
+          waste_saved_sgd?: number | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          ingredients_used?: Json | null
+          spoonacular_id?: number
+          title?: string | null
+          user_id?: string
+          waste_saved_sgd?: number | null
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           created_at: string
