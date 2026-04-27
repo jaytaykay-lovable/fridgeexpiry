@@ -164,7 +164,7 @@ export const useRecipeStore = create<RecipeState>((set, get) => ({
       const merged: RecipeDetail = {
         ...(known as any),
         ...(detail as any),
-        reason: known?.reason || detail!.reason || '',
+        reason: known?.reason || detail.reason || '',
       };
       set({ currentRecipe: merged, isLoadingDetail: false });
 
