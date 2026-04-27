@@ -5,6 +5,16 @@ const JSON_HEADERS = { "Content-Type": "application/json" };
 
 serve(async (req) => {
   try {
+    // Require shared cron secret to prevent unauthenticated mass-notification triggers
+    const cronSecret = Deno.env.get("CRON_SECRET");
+    const incoming = req.headers.get("x-cron-secret");
+    if (!cronSecret || incoming !== cronSecret) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: JSON_HEADERS }
+      );
+    }
+
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY")!;
@@ -93,7 +103,7 @@ serve(async (req) => {
   } catch (e) {
     console.error("check-expiry-notifications error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: JSON_HEADERS }
     );
   }
