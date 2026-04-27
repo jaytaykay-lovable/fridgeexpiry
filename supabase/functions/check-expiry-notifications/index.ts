@@ -315,7 +315,7 @@ async function hkdf(
     ["sign"]
   );
   const infoWithCounter = new Uint8Array([...info, 1]);
-  const okm = new Uint8Array(await crypto.subtle.sign("HMAC", prkKey, infoWithCounter));
+  const okm = new Uint8Array(await crypto.subtle.sign("HMAC", prkKey, infoWithCounter as BufferSource));
   return okm.slice(0, length);
 }
 
