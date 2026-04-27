@@ -1,7 +1,7 @@
 {
-  "name": "Fridge Expiry AI",
-  "short_name": "FridgeExpiry",
-  "description": "Smart food tracking - reduce food waste with AI",
+  "name": "Freshie",
+  "short_name": "Freshie",
+  "description": "Cook what's in your fridge — recipe discovery from what you already have.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f5f9f7",

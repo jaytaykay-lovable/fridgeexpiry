@@ -2,3 +2,9 @@ project_id = "eilleupxcxjpzdepruuy"
 
 [functions.check-expiry-notifications]
 verify_jwt = false
+
+[functions.discover-recipes]
+verify_jwt = false
+
+[functions.recipe-detail]
+verify_jwt = false
