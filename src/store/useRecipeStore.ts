@@ -145,29 +145,20 @@ export const useRecipeStore = create<RecipeState>((set, get) => ({
       const fridgeItems = useFridgeStore.getState().items.filter((i) => i.status === 'active');
       const fridge = fridgeItems.map((i) => i.name).join(',');
 
-      const { data, error } = await supabase.functions.invoke('recipe-detail', {
-        body: undefined,
-        method: 'GET',
-      } as any);
-      // supabase.functions.invoke doesn't easily support GET with query params; use direct fetch
-      let detail: RecipeDetail | null = null;
-      if (!data || error) {
-        const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/recipe-detail?id=${id}&fridge=${encodeURIComponent(fridge)}`;
-        const session = (await supabase.auth.getSession()).data.session;
-        const res = await fetch(url, {
-          headers: {
-            Authorization: `Bearer ${session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          },
-        });
-        if (!res.ok) {
-          const j = await res.json().catch(() => ({}));
-          throw new Error(j.error || `Failed to load recipe (${res.status})`);
-        }
-        detail = await res.json();
-      } else {
-        detail = data as RecipeDetail;
+      // Use direct fetch — invoke() doesn't support GET query params cleanly
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/recipe-detail?id=${id}&fridge=${encodeURIComponent(fridge)}`;
+      const session = (await supabase.auth.getSession()).data.session;
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error || `Failed to load recipe (${res.status})`);
       }
+      const detail: RecipeDetail = await res.json();
 
       // Merge with known card data so we keep image/likes/reason if missing
       const merged: RecipeDetail = {
