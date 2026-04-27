@@ -34,8 +34,8 @@ export default function AuthPage() {
     <div className="auth-container">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <img src="/logo.png" alt="Fridge Expiry AI" className="mx-auto mb-3 h-24 w-auto" />
-          <h1 className="font-display text-2xl font-bold">Fridge Expiry AI</h1>
+          <img src="/logo.png" alt="Freshie" className="mx-auto mb-3 h-24 w-auto" />
+          <h1 className="font-display text-2xl font-bold">Freshie</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Smart Food Tracking
           </p>
