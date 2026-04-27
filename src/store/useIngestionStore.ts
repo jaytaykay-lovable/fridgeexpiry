@@ -37,7 +37,7 @@ interface IngestionState {
 
   // Actions
   fetchQueue: () => Promise<void>;
-  subscribe: () => void;
+  subscribe: () => Promise<void>;
   unsubscribe: () => void;
 
   // Ingestion triggers
