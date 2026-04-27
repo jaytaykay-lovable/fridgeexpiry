@@ -215,7 +215,7 @@ async function encryptPayload(
   // Import user's public key
   const userPublicKey = await crypto.subtle.importKey(
     "raw",
-    userPublicKeyBytes,
+    userPublicKeyBytes as BufferSource,
     { name: "ECDH", namedCurve: "P-256" },
     false,
     []
@@ -261,7 +261,7 @@ async function encryptPayload(
   // Encrypt with AES-128-GCM
   const key = await crypto.subtle.importKey(
     "raw",
-    cek,
+    cek as BufferSource,
     { name: "AES-GCM" },
     false,
     ["encrypt"]
@@ -269,9 +269,9 @@ async function encryptPayload(
 
   const encrypted = new Uint8Array(
     await crypto.subtle.encrypt(
-      { name: "AES-GCM", iv: nonce },
+      { name: "AES-GCM", iv: nonce as BufferSource },
       key,
-      paddedPayload
+      paddedPayload as BufferSource
     )
   );
 
@@ -300,16 +300,16 @@ async function hkdf(
 ): Promise<Uint8Array> {
   const key = await crypto.subtle.importKey(
     "raw",
-    salt.length ? salt : new Uint8Array(32),
+    (salt.length ? salt : new Uint8Array(32)) as BufferSource,
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"]
   );
-  const prk = new Uint8Array(await crypto.subtle.sign("HMAC", key, ikm));
+  const prk = new Uint8Array(await crypto.subtle.sign("HMAC", key, ikm as BufferSource));
 
   const prkKey = await crypto.subtle.importKey(
     "raw",
-    prk,
+    prk as BufferSource,
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"]
