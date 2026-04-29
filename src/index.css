@@ -118,7 +118,7 @@
   }
 
   .bottom-nav-item {
-    @apply relative flex min-w-[74px] flex-col items-center justify-center gap-0.5 rounded-xl px-4 py-2 text-muted-foreground transition-all duration-200;
+    @apply relative flex min-w-[60px] flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 text-muted-foreground transition-all duration-200;
   }
 
   .bottom-nav-item::after {
@@ -267,4 +267,7 @@
   .recipe-card-image-fallback {
     @apply flex items-center justify-center bg-muted text-muted-foreground text-4xl;
   }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }

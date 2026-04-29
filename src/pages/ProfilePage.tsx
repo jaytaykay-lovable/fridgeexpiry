@@ -14,6 +14,7 @@ export default function ProfilePage() {
   const { settings, fetchSettings, updateSettings } = useFridgeStore();
   const [expiryDays, setExpiryDays] = useState('7');
   const [notifyDays, setNotifyDays] = useState('2');
+  const [householdSize, setHouseholdSize] = useState('1');
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
 
@@ -25,6 +26,7 @@ export default function ProfilePage() {
     if (settings) {
       setExpiryDays(String(settings.default_expiry_days));
       setNotifyDays(String(settings.notify_days_before));
+      setHouseholdSize(String(settings.household_size ?? 1));
     }
   }, [settings]);
 
@@ -54,11 +56,16 @@ export default function ProfilePage() {
   const handleSave = async () => {
     const d = parseInt(expiryDays, 10);
     const n = parseInt(notifyDays, 10);
-    if (isNaN(d) || isNaN(n) || d < 1 || n < 0) {
+    const h = parseInt(householdSize, 10);
+    if (isNaN(d) || isNaN(n) || isNaN(h) || d < 1 || n < 0 || h < 1) {
       toast({ title: 'Invalid values', variant: 'destructive' });
       return;
     }
-    await updateSettings({ default_expiry_days: d, notify_days_before: n });
+    await updateSettings({
+      default_expiry_days: d,
+      notify_days_before: n,
+      household_size: h,
+    });
     toast({ title: 'Settings saved' });
   };
 
@@ -112,6 +119,20 @@ export default function ProfilePage() {
               min={0}
               value={notifyDays}
               onChange={(e) => setNotifyDays(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="household-size">Household size</Label>
+            <p className="text-xs text-muted-foreground mb-1">
+              Used to compare your impact against the global average
+            </p>
+            <Input
+              id="household-size"
+              type="number"
+              min={1}
+              value={householdSize}
+              onChange={(e) => setHouseholdSize(e.target.value)}
             />
           </div>
 
