@@ -6,7 +6,11 @@ export interface FoodItem {
   expiry_date: string;
   is_flagged: boolean;
   image_url: string | null;
-  status: 'active' | 'consumed' | 'wasted';
+  status: 'active' | 'consumed' | 'wasted' | 'expired';
+  estimated_weight_kg: number | null;
+  estimated_cost_sgd: number | null;
+  consumed_at: string | null;
+  wasted_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -15,6 +19,7 @@ export interface UserSettings {
   user_id: string;
   default_expiry_days: number;
   notify_days_before: number;
+  household_size: number;
   created_at: string;
   updated_at: string;
 }
@@ -29,6 +34,8 @@ export interface IngestionQueueItem {
   extracted_name: string | null;
   extracted_date: string | null;
   extracted_category: string | null;
+  extracted_weight_kg: number | null;
+  extracted_cost_sgd: number | null;
   is_flagged: boolean;
   error_message: string | null;
   created_at: string;

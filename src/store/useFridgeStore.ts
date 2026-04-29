@@ -9,11 +9,11 @@ interface FridgeState {
 
   fetchItems: () => Promise<void>;
   fetchSettings: () => Promise<void>;
-  updateSettings: (updates: Partial<Pick<UserSettings, 'default_expiry_days' | 'notify_days_before'>>) => Promise<void>;
+  updateSettings: (updates: Partial<Pick<UserSettings, 'default_expiry_days' | 'notify_days_before' | 'household_size'>>) => Promise<void>;
   markConsumed: (id: string) => Promise<boolean>;
   markWasted: (id: string) => Promise<boolean>;
   restoreItem: (id: string) => Promise<boolean>;
-  updateItem: (id: string, updates: Partial<Pick<FoodItem, 'name' | 'category' | 'expiry_date'>>) => Promise<void>;
+  updateItem: (id: string, updates: Partial<Pick<FoodItem, 'name' | 'category' | 'expiry_date' | 'estimated_weight_kg' | 'estimated_cost_sgd'>>) => Promise<void>;
 }
 
 export const useFridgeStore = create<FridgeState>((set, get) => ({
