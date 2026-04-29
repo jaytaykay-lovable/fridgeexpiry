@@ -12,7 +12,16 @@ import { useSignedUrl } from '@/hooks/useSignedUrl';
 
 interface EditFoodModalProps {
   item: FoodItem;
-  onSave: (id: string, updates: { name: string; category: string; expiry_date: string }) => void;
+  onSave: (
+    id: string,
+    updates: {
+      name: string;
+      category: string;
+      expiry_date: string;
+      estimated_weight_kg: number | null;
+      estimated_cost_sgd: number | null;
+    },
+  ) => void;
   onUndo: (id: string) => void;
   onClose: () => void;
 }
@@ -23,11 +32,25 @@ export default function EditFoodModal({ item, onSave, onUndo, onClose }: EditFoo
   const [expiryDate, setExpiryDate] = useState(
     format(new Date(item.expiry_date), 'yyyy-MM-dd')
   );
+  const [weightKg, setWeightKg] = useState(
+    item.estimated_weight_kg != null ? String(item.estimated_weight_kg) : '',
+  );
+  const [costSgd, setCostSgd] = useState(
+    item.estimated_cost_sgd != null ? String(item.estimated_cost_sgd) : '',
+  );
   const imageUrl = useSignedUrl(item.image_url);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(item.id, { name, category, expiry_date: expiryDate });
+    const w = parseFloat(weightKg);
+    const c = parseFloat(costSgd);
+    onSave(item.id, {
+      name,
+      category,
+      expiry_date: expiryDate,
+      estimated_weight_kg: isNaN(w) ? null : w,
+      estimated_cost_sgd: isNaN(c) ? null : c,
+    });
     onClose();
   };
 
@@ -86,6 +109,35 @@ export default function EditFoodModal({ item, onSave, onUndo, onClose }: EditFoo
               value={expiryDate}
               onChange={(e) => setExpiryDate(e.target.value)}
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="weight">Weight (kg)</Label>
+              <Input
+                id="weight"
+                type="number"
+                inputMode="decimal"
+                step="0.05"
+                min="0"
+                placeholder="0.20"
+                value={weightKg}
+                onChange={(e) => setWeightKg(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="cost">Cost (SGD)</Label>
+              <Input
+                id="cost"
+                type="number"
+                inputMode="decimal"
+                step="0.10"
+                min="0"
+                placeholder="3.00"
+                value={costSgd}
+                onChange={(e) => setCostSgd(e.target.value)}
+              />
+            </div>
           </div>
 
           {item.status !== 'active' && (
