@@ -14,10 +14,34 @@ export type Database = {
   }
   public: {
     Tables: {
+      badges: {
+        Row: {
+          badge_key: string
+          id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          badge_key: string
+          id?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       food_items: {
         Row: {
           category: string
+          consumed_at: string | null
           created_at: string
+          estimated_cost_sgd: number | null
+          estimated_weight_kg: number | null
           expiry_date: string
           id: string
           image_url: string | null
@@ -26,10 +50,14 @@ export type Database = {
           status: Database["public"]["Enums"]["food_status"]
           updated_at: string
           user_id: string
+          wasted_at: string | null
         }
         Insert: {
           category?: string
+          consumed_at?: string | null
           created_at?: string
+          estimated_cost_sgd?: number | null
+          estimated_weight_kg?: number | null
           expiry_date: string
           id?: string
           image_url?: string | null
@@ -38,10 +66,14 @@ export type Database = {
           status?: Database["public"]["Enums"]["food_status"]
           updated_at?: string
           user_id: string
+          wasted_at?: string | null
         }
         Update: {
           category?: string
+          consumed_at?: string | null
           created_at?: string
+          estimated_cost_sgd?: number | null
+          estimated_weight_kg?: number | null
           expiry_date?: string
           id?: string
           image_url?: string | null
@@ -50,6 +82,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["food_status"]
           updated_at?: string
           user_id?: string
+          wasted_at?: string | null
         }
         Relationships: []
       }
@@ -213,6 +246,7 @@ export type Database = {
         Row: {
           created_at: string
           default_expiry_days: number
+          household_size: number
           notify_days_before: number
           updated_at: string
           user_id: string
@@ -220,6 +254,7 @@ export type Database = {
         Insert: {
           created_at?: string
           default_expiry_days?: number
+          household_size?: number
           notify_days_before?: number
           updated_at?: string
           user_id: string
@@ -227,6 +262,7 @@ export type Database = {
         Update: {
           created_at?: string
           default_expiry_days?: number
+          household_size?: number
           notify_days_before?: number
           updated_at?: string
           user_id?: string
@@ -238,10 +274,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      analytics_overview: {
+        Args: { p_end: string; p_start: string }
+        Returns: {
+          items_consumed: number
+          items_wasted: number
+          kg_avoided: number
+          kg_wasted: number
+          meals_cooked: number
+          money_saved_sgd: number
+          streak_days: number
+          total_kg_avoided_all_time: number
+          total_money_saved_all_time: number
+        }[]
+      }
+      analytics_series: {
+        Args: { p_bucket: string; p_end: string; p_start: string }
+        Returns: {
+          bucket_start: string
+          kg_avoided: number
+          kg_wasted: number
+        }[]
+      }
       commit_approved_items: { Args: never; Returns: number }
+      expire_overdue_items: { Args: never; Returns: number }
     }
     Enums: {
-      food_status: "active" | "consumed" | "wasted"
+      food_status: "active" | "consumed" | "wasted" | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -369,7 +428,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      food_status: ["active", "consumed", "wasted"],
+      food_status: ["active", "consumed", "wasted", "expired"],
     },
   },
 } as const
