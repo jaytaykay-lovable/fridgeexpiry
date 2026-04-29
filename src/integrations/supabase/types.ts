@@ -91,8 +91,10 @@ export type Database = {
           created_at: string
           error_message: string | null
           extracted_category: string | null
+          extracted_cost_sgd: number | null
           extracted_date: string | null
           extracted_name: string | null
+          extracted_weight_kg: number | null
           id: string
           image_path: string | null
           input_type: string
@@ -105,8 +107,10 @@ export type Database = {
           created_at?: string
           error_message?: string | null
           extracted_category?: string | null
+          extracted_cost_sgd?: number | null
           extracted_date?: string | null
           extracted_name?: string | null
+          extracted_weight_kg?: number | null
           id?: string
           image_path?: string | null
           input_type?: string
@@ -119,8 +123,10 @@ export type Database = {
           created_at?: string
           error_message?: string | null
           extracted_category?: string | null
+          extracted_cost_sgd?: number | null
           extracted_date?: string | null
           extracted_name?: string | null
+          extracted_weight_kg?: number | null
           id?: string
           image_path?: string | null
           input_type?: string

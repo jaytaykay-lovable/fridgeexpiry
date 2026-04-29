@@ -128,7 +128,7 @@ async function processTextInput(
         messages: [
           {
             role: "system",
-            content: `You are a food item parser. Given a text description of food, extract: name, category (one of: Dairy, Meat, Seafood, Fruits, Vegetables, Grains, Beverages, Snacks, Condiments, Frozen, Bakery, Other), and expiry_date (YYYY-MM-DD). Today is ${today}. If no expiry date mentioned, use ${fallbackDate} and set is_flagged to true.`,
+            content: `You are a food item parser. Given a text description of food, extract: name, category (one of: Dairy, Meat, Seafood, Fruits, Vegetables, Grains, Beverages, Snacks, Condiments, Frozen, Bakery, Other), expiry_date (YYYY-MM-DD), estimated_weight_kg (typical weight in kg of one unit of this item — e.g. 1 chicken breast ≈ 0.18, 1 bunch spinach ≈ 0.25, 1 carton of 6 eggs ≈ 0.33, 1 apple ≈ 0.18, 1 L milk ≈ 1.03), and estimated_cost_sgd (typical Singapore retail price in SGD for that quantity — e.g. chicken breast ≈ 3.5, spinach ≈ 2.5, eggs ≈ 3, apple ≈ 1, 1L milk ≈ 4). Today is ${today}. If no expiry date mentioned, use ${fallbackDate} and set is_flagged to true.`,
           },
           {
             role: "user",
@@ -151,8 +151,10 @@ async function processTextInput(
                   },
                   expiry_date: { type: "string" },
                   is_flagged: { type: "boolean" },
+                  estimated_weight_kg: { type: "number" },
+                  estimated_cost_sgd: { type: "number" },
                 },
-                required: ["name", "category", "expiry_date", "is_flagged"],
+                required: ["name", "category", "expiry_date", "is_flagged", "estimated_weight_kg", "estimated_cost_sgd"],
                 additionalProperties: false,
               },
             },
@@ -184,6 +186,8 @@ async function processTextInput(
       extracted_date: parsed.expiry_date,
       extracted_category: parsed.category || "Other",
       is_flagged: parsed.is_flagged || false,
+      extracted_weight_kg: parsed.estimated_weight_kg ?? null,
+      extracted_cost_sgd: parsed.estimated_cost_sgd ?? null,
     })
     .eq("id", queueItem.id);
 }
@@ -226,7 +230,7 @@ async function processImageInput(
         messages: [
           {
             role: "system",
-            content: `You are a food recognition AI. Analyze the image and identify all visible food items. For each item, extract: name, category (one of: Dairy, Meat, Seafood, Fruits, Vegetables, Grains, Beverages, Snacks, Condiments, Frozen, Bakery, Other), and expiry_date (YYYY-MM-DD format). Today is ${today}. If you cannot determine the expiry date, use ${fallbackDate} and set is_flagged to true. Otherwise set is_flagged to false.`,
+            content: `You are a food recognition AI. Analyze the image and identify all visible food items. For each item, extract: name, category (one of: Dairy, Meat, Seafood, Fruits, Vegetables, Grains, Beverages, Snacks, Condiments, Frozen, Bakery, Other), expiry_date (YYYY-MM-DD), estimated_weight_kg (typical weight in kg per visible unit — e.g. chicken breast 0.18, bunch spinach 0.25, 6-egg carton 0.33, apple 0.18, 1L milk 1.03), and estimated_cost_sgd (typical Singapore retail price in SGD for that quantity — e.g. chicken breast 3.5, spinach 2.5, eggs 3, apple 1, 1L milk 4). Today is ${today}. If you cannot determine the expiry date, use ${fallbackDate} and set is_flagged to true. Otherwise set is_flagged to false.`,
           },
           {
             role: "user",
@@ -257,8 +261,10 @@ async function processImageInput(
                         },
                         expiry_date: { type: "string" },
                         is_flagged: { type: "boolean" },
+                        estimated_weight_kg: { type: "number" },
+                        estimated_cost_sgd: { type: "number" },
                       },
-                      required: ["name", "category", "expiry_date", "is_flagged"],
+                      required: ["name", "category", "expiry_date", "is_flagged", "estimated_weight_kg", "estimated_cost_sgd"],
                       additionalProperties: false,
                     },
                   },
@@ -306,6 +312,8 @@ async function processImageInput(
       extracted_date: first.expiry_date,
       extracted_category: first.category || "Other",
       is_flagged: first.is_flagged || false,
+      extracted_weight_kg: first.estimated_weight_kg ?? null,
+      extracted_cost_sgd: first.estimated_cost_sgd ?? null,
     })
     .eq("id", queueItem.id);
 
@@ -320,6 +328,8 @@ async function processImageInput(
       extracted_date: item.expiry_date,
       extracted_category: item.category || "Other",
       is_flagged: item.is_flagged || false,
+      extracted_weight_kg: item.estimated_weight_kg ?? null,
+      extracted_cost_sgd: item.estimated_cost_sgd ?? null,
     }));
 
     await supabase.from("ingestion_queue").insert(additionalRows);
