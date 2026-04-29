@@ -12,6 +12,7 @@ import ProfilePage from "@/pages/ProfilePage";
 import AuthPage from "@/pages/AuthPage";
 import { RecipeDiscoveryPage } from "@/pages/RecipeDiscoveryPage";
 import RecipeDetailPage from "@/pages/RecipeDetailPage";
+import AnalyticsPage from "@/pages/AnalyticsPage";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 import { registerServiceWorker } from "@/lib/pushNotifications";
@@ -19,7 +20,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 const queryClient = new QueryClient();
 
-const NAV_ROUTE_ORDER = ["/", "/recipes", "/camera", "/profile"] as const;
+const NAV_ROUTE_ORDER = ["/", "/recipes", "/camera", "/analytics", "/profile"] as const;
 
 const getRouteIndex = (pathname: string) => {
   const normalizedPath = pathname === "/" ? "/" : pathname.replace(/\/+$/, "");
@@ -102,6 +103,7 @@ function AppRoutes() {
               <Route path="/recipes" element={<RecipeDiscoveryPage />} />
               <Route path="/recipes/:id" element={<RecipeDetailPage />} />
               <Route path="/camera" element={<CameraPage />} />
+              <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Camera, User, BookOpen } from 'lucide-react';
+import { Home, Camera, User, BookOpen, BarChart3 } from 'lucide-react';
 
 export default function BottomNav() {
   const links = [
     { to: '/', icon: Home, label: 'Fridge' },
     { to: '/recipes', icon: BookOpen, label: 'Recipes' },
     { to: '/camera', icon: Camera, label: 'Add' },
+    { to: '/analytics', icon: BarChart3, label: 'Stats' },
     { to: '/profile', icon: User, label: 'Profile' },
   ];
 
@@ -15,6 +16,7 @@ export default function BottomNav() {
         <NavLink
           key={to}
           to={to}
+          end={to === '/'}
           className={({ isActive, isPending }) =>
             `bottom-nav-item ${isActive ? 'active' : ''} ${isPending ? 'pending' : ''}`
           }
